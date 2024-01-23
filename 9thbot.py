@@ -170,30 +170,27 @@ async def on_message(message):
                 async for entry in guild.audit_logs(limit=100):
                         action = ''
                         if entry.target.id == user.id and entry.action in [discord.AuditLogAction.kick, discord.AuditLogAction.ban, discord.AuditLogAction.unban, discord.AuditLogAction.member_update]:
-                            if entry.action == discord.AuditLogAction.kick:
-                                action = "Kick"
+                            entry_action = entry.action
+                            match entry_action:
+                                case AuditLogAction.kick:
+                                    action = "Kick"
+                                case AuditLogAction.ban:
+                                    action = "Ban"
+                                case AuditLogAction.unban:
+                                    action = "Unban"
+                                case AuditLogAction.member_update if entry.user.id != entry.target.id:
+                                    action = "Timeout"
+
+                            if action:
                                 timestamp = entry.created_at.strftime('%Y-%m-%d %H:%M:%S')
                                 reason = entry.reason
-                                moderator = "<@" + str(entry.user.id) + ">"
-                            if entry.action == discord.AuditLogAction.ban:
-                                action = "Ban"
-                                timestamp = entry.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                                reason = entry.reason
-                                moderator = "<@" + str(entry.user.id) + ">"
-                            if entry.action == discord.AuditLogAction.unban:
-                                action = "Unban"
-                                timestamp = entry.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                                reason = entry.reason
-                                moderator = "<@" + str(entry.user.id) + ">"
-                            if entry.action == discord.AuditLogAction.member_update and entry.user.id != entry.target.id:
-                                action = "Timeout"
-                                timestamp = entry.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                                reason = entry.reason
-                                moderator = "<@" + str(entry.user.id) + ">"
+                                moderator = f"<@{entry.user.id}>"
+                                
                             if action != '':
                                 timestamp = entry.created_at.strftime('%Y-%m-%d %H:%M:%S')
                                 reason = entry.reason
                                 moderator = "<@" + str(entry.user.id) + ">"
+                                
                                 if field_count == 24:
                                     embed2 = discord.Embed(
                                     title='',
